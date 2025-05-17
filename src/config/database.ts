@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import { config } from  "./auth";
 // import { User } from "../modules/users/user.model";
 import { User } from "../modules/users/user.model"
+import { Reservation } from "../modules/reservation/reservation.model";
+import { Payment } from "../modules/payment/payment.model";
 dotenv.config(); 
 
 export const sequelize = new Sequelize(
@@ -23,7 +25,8 @@ export const sequelize = new Sequelize(
 
 // Register models
 sequelize.addModels([User]);
-
+sequelize.addModels([Reservation]);
+sequelize.addModels([Payment]);
 // Test database connection
 export const connectDB = async () => {
   try {

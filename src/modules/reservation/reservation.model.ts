@@ -72,6 +72,12 @@ class Reservation extends Model<Reservation> {
     })
     code!: string;
 
+    @Column({
+        type: DataType.STRING,
+        allowNull: true
+    })
+    paymentRefrence!: string
+
     }
 
 export { Reservation}

@@ -1,37 +1,44 @@
-import axios from 'axios';
-const https = require('https')
+import { Request, Response } from 'express';
 import dotenv from 'dotenv';
-dotenv.config(); 
+dotenv.config();
+import https from 'https';
 
-const params = JSON.stringify({
-    "email": "customer@email.com",
-    "amount": "500000"
-    })
-
-    const options = {
-    hostname: 'api.paystack.co',
-    port: 443,
-    path: '/transaction/initialize',
-    method: 'POST',
-    headers: {
-        Authorization: 'Bearer ' + process.env.paystacktestsecretkey,
-        'Content-Type': 'application/json'
-    }
-    }
-
-    const req = https.request(options, res => {
-    let data = ''
-
-    res.on('data', (chunk) => {
-        data += chunk
+export const initializePay = (req: Request, res: Response) => {
+    const params = JSON.stringify({
+        email: req.query.email, 
+        amount: req.query.amount             
     });
 
-    res.on('end', () => {
-        console.log(JSON.parse(data))
-    })
-    }).on('error', error => {
-    console.error(error)
-    })
+    const options = {
+        hostname: 'api.paystack.co',
+        port: 443,
+        path: '/transaction/initialize',
+        method: 'POST',
+        headers: {
+            Authorization: 'Bearer ' + process.env.paystacktestsecretkey,
+            'Content-Type': 'application/json'
+        }
+    };
 
-    req.write(params)
-    req.end()
+    const paystackReq = https.request(options, paystackRes => {
+        let data = '';
+
+        paystackRes.on('data', (chunk) => {
+            data += chunk;
+        });
+
+        paystackRes.on('end', () => {
+            const response = JSON.parse(data);
+            console.log(response);
+            res.status(200).json(response);
+        });
+    });
+
+    paystackReq.on('error', error => {
+        console.error(error);
+        res.status(500).json({ error: 'Payment initialization failed' });
+    });
+
+    paystackReq.write(params);
+    paystackReq.end();
+};
