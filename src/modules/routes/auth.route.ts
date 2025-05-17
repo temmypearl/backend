@@ -2,7 +2,7 @@ import reservations from "../reservation/reservation.controller";
 import express from "express";
 import {registerValidation} from "../reservation/reservation.validation";
 import { validateData } from "../../middlewares";
-import createOrder from '../payment/payment.controller';
+import createOrder from '../payment/paypal.controller';
 
 const hotelRoute = express.Router();
 
