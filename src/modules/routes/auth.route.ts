@@ -1,13 +1,18 @@
-import { UserController } from "../users/user.contoller";
+import reservations from "../reservation/reservation.controller";
 import express from "express";
-import { authValidation } from "../users/user.validation";
+import {registerValidation} from "../reservation/reservation.validation";
 import { validateData } from "../../middlewares";
+import generateAccessToken from '../payment/payment.controller';
 
-const authRoutes = express.Router();
+const hotelRoute = express.Router();
+
+hotelRoute.post("/api/v1/register",reservations.Register);
+hotelRoute.post("/api/v1/services/paypal", generateAccessToken);
+
 
 // authRoutes.post("/signin",validateData(authValidation.registerSchema),UserController.signin);
 // authRoutes.post("/login", UserController.login);
 // authRoutes.post("/verify-account", UserController.verifyAccount);
 // authRoutes.post("/refresh-token", UserController.refreshToken);
 
-export{ authRoutes };
+export{ hotelRoute };

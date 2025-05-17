@@ -44,7 +44,7 @@ app.use(morgan('combined'));
 // });
 
 
-app.use("/Nonso", apiRouter)
+app.use("/UIhotel", apiRouter)
 // app.use('/api/v1', apiRouter);
 
 
