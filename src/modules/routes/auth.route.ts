@@ -2,12 +2,12 @@ import reservations from "../reservation/reservation.controller";
 import express from "express";
 import {registerValidation} from "../reservation/reservation.validation";
 import { validateData } from "../../middlewares";
-import generateAccessToken from '../payment/payment.controller';
+import createOrder from '../payment/payment.controller';
 
 const hotelRoute = express.Router();
 
 hotelRoute.post("/api/v1/register",reservations.Register);
-hotelRoute.post("/api/v1/services/paypal", generateAccessToken);
+hotelRoute.post("/api/v1/services/paypal", createOrder);
 
 
 // authRoutes.post("/signin",validateData(authValidation.registerSchema),UserController.signin);
