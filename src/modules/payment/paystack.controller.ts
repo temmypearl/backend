@@ -4,7 +4,7 @@ dotenv.config();
 import https from 'https';
 
 export const initializePay = (req: Request, res: Response) => {
-    const params = JSON.stringify({
+    const userdetail = JSON.stringify({
         email: req.query.email, 
         amount: req.query.amount             
     });
@@ -39,6 +39,6 @@ export const initializePay = (req: Request, res: Response) => {
         res.status(500).json({ error: 'Payment initialization failed' });
     });
 
-    paystackReq.write(params);
+    paystackReq.write(userdetail);
     paystackReq.end();
 };

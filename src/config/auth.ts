@@ -8,7 +8,7 @@ dotenv.config({
 });
 const configSchema = z.object({
     PORT: z.coerce.number().default(3000),
-    connString: z.string(),
+    DATABASE_URL: z.string(),
     env: z.string(),
 })
 

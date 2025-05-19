@@ -1,63 +1,19 @@
-import { Table, Column, Model, DataType, BeforeCreate } from 'sequelize-typescript';
-import bcrypt from 'bcrypt';
+import { pgTable, serial, varchar, timestamp } from 'drizzle-orm/pg-core';
 
-@Table({
-    tableName: 'users',
-    timestamps: true,
-})
-class User extends Model<User> {
-    @Column({
-        type: DataType.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-        })
-        id!: number;
+export const User = pgTable('users', {
+  id: serial('id').primaryKey(),
 
-    @Column({
-        type: DataType.STRING,
-        allowNull: false,
-    })
-    firstName!: string;
+  firstName: varchar('first_name', { length: 255 }).notNull(),
 
-    @Column({
-        type: DataType.STRING,
-        allowNull: false,
-    })
-    lastName!: string;
+  lastName: varchar('last_name', { length: 255 }).notNull(),
 
-    @Column({
-        type: DataType.STRING,
-        allowNull: false,
-    })
-    phoneNumber!: string;
+  phoneNumber: varchar('phone_number', { length: 20 }).notNull(),
 
-    @Column({
-        type: DataType.STRING,
-        allowNull: false,
-        unique: true,
-        validate: {
-        isEmail: true,
-        },
-    })
-    email!: string;
+  email: varchar('email', { length: 255 }).notNull().unique(),
 
-    @Column({
-        type: DataType.STRING,
-        allowNull: false,
-    })
-    password!: string;
+  password: varchar('password', { length: 255 }).notNull(),
 
-//   Hash password before creating user
-    @BeforeCreate
-    static async hashPassword(instance: User) {
-        const saltRounds = 10;
-        instance.password = await bcrypt.hash(instance.password, saltRounds);
-    }
+  createdAt: timestamp('created_at').defaultNow(),
 
-    // Method to compare passwords
-    async comparePassword(candidatePassword: string): Promise<boolean> {
-        return bcrypt.compare(candidatePassword, this.password);
-    }
-    }
-
-export { User};
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
