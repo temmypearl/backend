@@ -1,19 +1,23 @@
-import { pgTable, serial, varchar, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, serial, varchar, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
+import { Payment } from 'modules/payment/payment.model';
 
 export const User = pgTable('users', {
-  id: serial('id').primaryKey(),
+    id: uuid('id').default(sql`gen_random_uuid()`).primaryKey(),
 
-  firstName: varchar('first_name', { length: 255 }).notNull(),
+    firstName: varchar('first_name', { length: 255 }).notNull(),
 
-  lastName: varchar('last_name', { length: 255 }).notNull(),
+    lastName: varchar('last_name', { length: 255 }).notNull(),
 
-  phoneNumber: varchar('phone_number', { length: 20 }).notNull(),
+    phoneNumber: varchar('phone_number', { length: 20 }).notNull(),
 
-  email: varchar('email', { length: 255 }).notNull().unique(),
+    email: varchar('email', { length: 255 }).notNull().unique(),
 
-  password: varchar('password', { length: 255 }).notNull(),
+    password: varchar('password', { length: 255 }).notNull(),
 
-  createdAt: timestamp('created_at').defaultNow(),
+    paymentReceipt: varchar('payment', { length: 255 }),
 
-  updatedAt: timestamp('updated_at').defaultNow(),
+    createdAt: timestamp('created_at').defaultNow(),
+
+    updatedAt: timestamp('updated_at').defaultNow(),
 });

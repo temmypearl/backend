@@ -9,7 +9,8 @@ import { Request } from 'express';
 
 export interface CustomRequest extends Request {
     validatedData?: {
-        name: string;
+        lastName: string;
+        firstName: string;
         email: string;
         password: string;
         phonenumber: string;

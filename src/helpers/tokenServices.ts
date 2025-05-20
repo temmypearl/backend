@@ -1,8 +1,13 @@
 import jwt, { SignOptions } from "jsonwebtoken";
-import dotenv from "dotenv";
 import { Request } from "express";
 
-dotenv.config({ path: './config.env' });
+import dotenv from "dotenv"
+import path from "path"
+
+
+dotenv.config({
+    path: path.join(__dirname, '../../.env')
+});
 
 export const generateAccessToken = (userId: string): string => {
     const secret: string | undefined = process.env.SECRET_STR;

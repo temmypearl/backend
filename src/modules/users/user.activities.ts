@@ -1,118 +1,119 @@
 
-// import { Request } from "express";
-// import Jwt  from "jsonwebtoken";
-// import dotenv from 'dotenv'
-// import bcrypt from 'bcrypt';
-// import { ApiError } from "middlewares";
-// dotenv.config({path: './config.env'});
-// import crypto from 'crypto';
-// import db from "./../Servers/databaseServer"
-// import { User } from "./user.model";
-// import {Otp_Table} from "../DB_schemas/otpSchema";
-// import {generateAccessToken, generateRefreshToken, verifyToken, getIpAddress} from "../../helpers/tokenServices";
-// import { eq, and , gt} from 'drizzle-orm/expressions';
+import { Request } from "express";
+import Jwt  from "jsonwebtoken";
+import dotenv from 'dotenv'
+import bcrypt from 'bcrypt';
+import { ApiError } from "./../../middlewares";
+dotenv.config({path: './config.env'});
+import { errorHandler } from "middlewares";
+import crypto from 'crypto';
+import {db} from "./../../config/drizzle/db"
+import { User } from "./user.model";
+import {otpTable} from "./userOtp.model";
+import {generateAccessToken, generateRefreshToken, verifyToken, getIpAddress} from "../../helpers/tokenServices";
+import { eq, and, gt } from 'drizzle-orm';
 
-// interface TokenPayload {
-//     userId: string;
-// }
-// class userActivityManager{
-//     private payload: { name: string; email: string; password: string; phonenumber: string };
-//     private accessToken: string;
-//     private refreshToken: string;
-//     private ipaddress: string
-//     private randomString: string;
+interface TokenPayload {
+    userId: string;
+}
+class userActivityManager{
+    private payload: { lastName: string; firstName:string; email: string; password: string; phoneNumber: string };
+    private accessToken: string;
+    private refreshToken: string;
+    private ipaddress: string
+    private randomString: string;
 
-//     constructor(req: Request, payload: { name: string; email: string; password: string; phonenumber: string }) {
-//         this.payload = payload;
-//         this.randomString = crypto.randomBytes(16).toString("hex");
-//         // this.ipaddress = payload.ipaddress;
-//         this.ipaddress = getIpAddress(req); // Get the IP address
-//         this.accessToken = generateAccessToken(this.payload.email);
-//         this.refreshToken = generateRefreshToken(this.payload.email);
-//     };
+    constructor(req: Request, payload: { lastName: string; firstName:string; email: string; password: string; phoneNumber: string }) {
+        this.payload = payload;
+
+        this.randomString = crypto.randomBytes(16).toString("hex");
+      
+        this.accessToken = generateAccessToken(this.payload.email);
+    };
     
 
-//     private static async hashPassword(password:string, saltRounds:number):Promise<string>{
-//         return bcrypt.hash(password, saltRounds);
-//     }
+    private static async hashPassword(password:string, saltRounds:number):Promise<string>{
+        return bcrypt.hash(password, saltRounds);
+    }
 
-//     public async comparePassword(password:string, dbpassword:string):Promise<boolean>{
-//         return await bcrypt.compare(password,dbpassword)
-//     }
+    public async comparePassword(password:string, dbpassword:string):Promise<boolean>{
+        return await bcrypt.compare(password,dbpassword)
+    }
 
-//     public async createotp():Promise<string>{
-//         return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
-//     }
+    public async createotp():Promise<string>{
+        return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    }
     
-//     createuser = async():Promise<any>=>{ 
-//         try {
-//                 const hashedPassword = await userActivityManager.hashPassword((this.payload as any).password, 12);
+    createuser = async():Promise<any>=>{ 
+        try {
+                const hashedPassword = await userActivityManager.hashPassword((this.payload as any).password, 12);
 
                 
 
-//                 const [newUser] = await db
-//                     .insert(User)
+                const [newUser] = await db
+                    .insert(User)
 
-//                     .values({
-//                         name: this.payload.name,
+                    .values({
+                        lastName: this.payload.lastName,
 
-//                         email: this.payload.email,
+                        firstName: this.payload.firstName,
 
-//                         password: hashedPassword,
+                        email: this.payload.email,
+
+                        password: hashedPassword,
                         
-//                         phonenumber: this.payload.phonenumber,
+                        phoneNumber: this.payload.phoneNumber
 
-//                         refresh_token: this.refreshToken,
-
-//                         ip_address: this.ipaddress
-//                     })
-//                     .returning(); 
-//                 const { password, ...userWithoutPassword } = newUser;
+                    })
+                    .returning(); 
+                const { password, ...userWithoutPassword } = newUser;
                 
-//                 return userWithoutPassword;
+                const access_token = this.accessToken
+                
+                return {userWithoutPassword, access_token};
 
-//             }catch (error: unknown) {
-//                 this.handleError(error);
-//                     }
-//         }
+            }catch (error: unknown) {
+                this.handleError(error);
+            }
+        }
     
-// logUserIN = async()=>{
-//         try {
-//             const user = await db
+logUserIN = async()=>{
+        try {
+            const user = await db
             
-//             .select()
+            .select()
 
-//             .from(User)
+            .from(User)
 
-//             .where(    
-//                     eq(User, this.payload.email),
-//                 ).limit(1)
+            .where(    
+                    eq(User, this.payload.email),
+                ).limit(1)
                         
-//                 if (user.length === 0) {
-//                     throw new ApiError(404, 'Email Provided does not exist.', false); 
-//                 }
+                if (user.length === 0) {
+                    throw new ApiError(404, 'Email Provided does not exist.', false); 
+                }
 
-//             const checkPassword = await this.comparePassword(this.payload.password, user[0].password)
+            const checkPassword = await this.comparePassword(this.payload.password, user[0].password)
 
-//             const refreshtoken = user[0].refresh_token
+            // const refreshtoken = user[0].refresh_token
 
-//                 if(!checkPassword) throw new ApiError(404,'incorrect Password', false)
-//                     const { password,refresh_token, ip_address, ...userWithoutPassword } = user[0];
+                if(!checkPassword) throw new ApiError(404,'incorrect Password', false)
+                    // const { password,refresh_token, ip_address, ...userWithoutPassword } = user[0];
     
     
-//             return{ userWithoutPassword,refreshtoken}
+            // return{ userWithoutPassword,refreshtoken}
 
-//         } catch (error:unknown) {
-//             this.handleError(error);
-//         }
-//     }
+        } catch (error:unknown) {
+            // this.handleError(error);
+        }
+    }
 
 // //forgot password function
 // forgotPassword = async (): Promise<{ token: string; expires: Date; message: string }> => {
 //         try {
-//             const { token, expires } = this.generateResetToken();
+//             // const { token, expires } = generateAccessToken();
 
-//             const encryptedToken = crypto.createHash('sha256').update(token).digest('hex');
+//             // const encryptedToken = crypto.createHash('sha256').update(token).digest('hex');
 
 //             const user = await db
 //             .update(User)
@@ -341,17 +342,17 @@
 //     }
 
 // //error handler function
-//     private handleError(error: unknown): never {
-//         const err = error instanceof Error
+    private handleError(error: unknown): never {
+        const err = error instanceof Error
 
-//             ? new ApiError(500,error.message, false)
+            ? new ApiError(500,error.message, false)
 
-//             : new ApiError(500, 'An unknown error occurred', false);
+            : new ApiError(500, 'An unknown error occurred', false);
 
-//         throw err;
-//     }
+        throw err;
+    }
 
     
-//     }
+    }
 
-//     export default userActivityManager;
+    export default userActivityManager;

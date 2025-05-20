@@ -9,19 +9,19 @@ import {
 } from 'drizzle-orm/pg-core';
 import { User } from './user.model';
 
-export const otpTable = pgTable('OtpTable_', {
-  id: serial('id').primaryKey(),
+export const otpTable = pgTable('OtpTable', {
+    id: serial('id').primaryKey(),
+    
+    user_id: uuid('user_id').notNull().references(() => User.id),
 
-  user_id: uuid('user_id').notNull(),
+    otp_code: varchar('otp_code', { length: 255 }).notNull(),
 
-  otp_code: varchar('otp_code', { length: 255 }).notNull(),
+    created_at: timestamp('created_at').defaultNow(),
 
-  created_at: timestamp('created_at').defaultNow(),
+    expires_at: timestamp('expires_at').notNull(),
 
-  expires_at: timestamp('expires_at').notNull(),
-
-  is_used: boolean('is_used').default(false),
-}, (otp) => ({
+    is_used: boolean('is_used').default(false),
+    }, (otp) => ({
   userFK: foreignKey({
     columns: [otp.user_id],
     foreignColumns: [User.id],
