@@ -1,0 +1,15 @@
+to start server:
+    npm run dev
+.env file should be created in the root
+    env= 
+    PORT= 4005
+    DATABASE_URL =
+    paypalClientId = 
+    paypalsecret = 
+    paypalurl = 
+    paystacktestsecretkey =
+    expiresIn = 
+    SECRET_STR = 
+    EXPIRES_IN = 
+
+apis base: /UIhotel/UI/
