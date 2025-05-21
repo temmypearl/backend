@@ -95,16 +95,16 @@ logUserIN = async()=>{
 
             const checkPassword = await this.comparePassword(this.payload.password, user[0].password)
 
-            // const refreshtoken = user[0].refresh_token
-
-                if(!checkPassword) throw new ApiError(404,'incorrect Password', false)
-                    // const { password,refresh_token, ip_address, ...userWithoutPassword } = user[0];
-    
-    
-            // return{ userWithoutPassword,refreshtoken}
+            if(!checkPassword) throw new ApiError(404,'incorrect Password', false)
+                
+                const { password, ...userWithoutPassword } = user[0];
+                
+                const access_token = this.accessToken 
+                
+                return {userWithoutPassword, access_token};
 
         } catch (error:unknown) {
-            // this.handleError(error);
+            this.handleError(error);
         }
     }
 

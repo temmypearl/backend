@@ -36,7 +36,20 @@ const signin = Asyncly( async (req, res) => {
 
 const login = Asyncly( async (req, res) => {
     const data = authValidation.LoginSchema.parse(req.body)
-    console.log(data)
+    
+    try {
+        const existingUser = new userActivityManager(req,{
+            lastName: "",
+            firstName: "",
+            email: data.email,
+            phoneNumber: "",
+            password: data.password
+        })
+
+        const user = existingUser.logUserIN()
+    } catch (error) {
+        
+    }
 
     // try {
     //     const existingUser = User.find({
