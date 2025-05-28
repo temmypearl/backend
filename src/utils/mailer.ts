@@ -26,7 +26,7 @@ transporter.verify((error, success) => {
     if (error) {
         console.error('❌ Transporter error:', error);
     } else {
-       
+        
     }
 });
 
@@ -41,10 +41,10 @@ const sendEmail = async ({ to, subject, text, html }: EmailOptions): Promise<boo
             html,
         });
 
-       
+        
         return true;
     } catch (error) {
-        console.error(`❌ Failed to send email to ${to}:`, error);
+        console.error(`Failed to send email to ${to}:`, error);
         return false;
     }
 };
@@ -83,5 +83,39 @@ export const sendOTPEmail = async (
     });
 
     return { success, otp: success ? otp : undefined };
+};
+
+// Function to send doctor approval request to company
+export const sendDoctorApprovalEmail = async (
+    email: string,
+    companyName: string,
+    doctor: {
+        firstName: string;
+        lastName: string;
+        specialization: string;
+        qualification: string;
+        experience: number;
+    }
+): Promise<boolean> => {
+    const html = `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+            <h3>Hello ${companyName},</h3>
+            <p>A new doctor, <strong>${doctor.firstName} ${doctor.lastName}</strong>, has requested to be linked to your hospital.</p>
+            <p>
+                <strong>Specialization:</strong> ${doctor.specialization} <br/>
+                <strong>Qualification:</strong> ${doctor.qualification} <br/>
+                <strong>Experience:</strong> ${doctor.experience} years
+            </p>
+            <p>Please log in to your dashboard to review and approve this request.</p>
+            <br/>
+            <p>Thank you,<br/>Your Team</p>
+        </div>
+    `;
+
+    return await sendEmail({
+        to: email,
+        subject: 'Doctor Approval Request',
+        html,
+    });
 };
 

@@ -2,8 +2,6 @@
   "compilerOptions": {
     "lib": ["es5", "es6"],
     "target": "es2021",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "module": "commonjs",
     "rootDir": "./src",
     "outDir": "./dist",
@@ -13,13 +11,12 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "types": ["./types.d.ts"],
-    "typeRoots": ["./node_modules/@types", "./src/types"],
     "baseUrl": "./src",
-    "paths": { 
-      "src/": ["./"]
-    }
+    "paths": {
+      "src/*": ["./*"]
+    },
+    "typeRoots": ["./node_modules/@types", "./src/types"]
   },
-  "include": ["src", "config"],
-  "exclude": ["node_modules", "dist", "/*spec.ts"]
+  "include": ["src", "config","src/types", "src/types.d.ts"],
+  "exclude": ["node_modules", "dist", "**/*spec.ts"]
 }

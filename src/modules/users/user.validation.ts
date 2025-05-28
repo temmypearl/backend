@@ -1,5 +1,15 @@
 import { z } from 'zod';
-
+const passwordValidation = z
+    .string()
+    .min(6, "Password must be at least 6 characters long")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number")
+    .regex(
+        /[^A-Za-z0-9]/,
+        "Password must contain at least one special character",
+    );
+    
+    
 const registerSchema = z.object({
     firstName: z
         .string()
@@ -12,21 +22,23 @@ const registerSchema = z.object({
     email: z
         .string()
         .email({ message: 'Invalid email address' }),
-    password: z
-        .string()
-        .min(6, { message: 'Password must be at least 6 characters long' }),
+
+    password: passwordValidation,
+    
     phoneNumber: z
         .string()
         .max(11, { message: 'Phone number must be less than 11 characters' }),
-    confirmPassword: z
-        .string()
-        
+    confirmPassword: passwordValidation
     }).refine((data)=> data.password === data.confirmPassword,{
         message:"Passwords don't Match",
         path:["confirmPassword"]
     });
 
-
+const verifySchema = z.object({
+    verificationCode: z
+    .string()
+    .min(6, { message: 'Verification code must be at least 6 characters long' }),
+})
 const LoginSchema = z.object({
     email: z
         .string()
@@ -37,4 +49,14 @@ const LoginSchema = z.object({
 
 })
 
-export const authValidation = {registerSchema, LoginSchema}
+const resetpasswordRequest = z.object({
+    email: z
+        .string()
+        .email({message:'Invalid email adress'}),
+})
+const resendVerficationCode = z.object({
+    email: z
+        .string()
+        .email({message:'Invalid email adress'}).toLowerCase(),
+})
+export const authValidation = {registerSchema, LoginSchema,verifySchema, resetpasswordRequest, resendVerficationCode};

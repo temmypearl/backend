@@ -2,11 +2,8 @@ import httpStatus from 'http-status';
 import { config, logger } from '../config';
 import { ApiError } from '../middlewares';
 import { Request, Response, NextFunction } from 'express';
-// import { PrismaClientKnownRequestError, PrismaClientUnknownRequestError } from '@prisma/client/runtime/library';
 
-
-
-export const errorHandler = (err, req, res, next) => {
+export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
   let error = err;
 
   // Convert non-ApiError instances to ApiError
@@ -16,20 +13,39 @@ export const errorHandler = (err, req, res, next) => {
     error = new ApiError(statusCode, message, false, error.details);
   }
 
-
   if (config.env === 'development') {
-    console.error(err);
+    console.error('Error stack:', error.stack || err.stack);
   }
 
-
-  const responseData = {
+  const responseData: any = {
     status: error.statusCode,
-    message: error.message,
     isOperational: error.isOperational,
     details: error.details || null,
-    ...(config.env === 'development' ? { stack: error.stack } : {}),
   };
 
+  // ✨ Try to parse error.message as JSON (Zod validation error)
+  try {
+    const parsedMessage = JSON.parse(error.message);
+    if (Array.isArray(parsedMessage)) {
+      responseData.message = 'Validation failed';
+      responseData.errors = parsedMessage.map((issue: any) => ({
+        field: issue.path.join('.'),
+        message: issue.message,
+        expected: issue.expected,
+        received: issue.received,
+      }));
+    } else {
+      responseData.message = error.message;
+    }
+  } catch (_) {
+    // If parsing fails, treat message as a regular string
+    responseData.message = error.message;
+  }
+
+  // Include stack only in development
+  if (config.env === 'development') {
+    responseData.stack = error.stack;
+  }
 
   res.status(error.statusCode).json(responseData);
 };

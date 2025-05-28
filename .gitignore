@@ -1,3 +1,4 @@
 /node_modules   
-/src/config/drizzle/migrations
+/src/drizzle/migrations
+/.env
 

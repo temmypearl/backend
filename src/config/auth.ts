@@ -1,28 +1,20 @@
-import {z} from "zod"
-import dotenv from "dotenv"
-import path from "path"
+import { z } from "zod";
+import dotenv from "dotenv";
+import path from "path";
 
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
-dotenv.config({
-    path: path.join(__dirname, '../../.env')
-});
 const configSchema = z.object({
-    PORT: z.coerce.number().default(3000),
-    DATABASE_URL: z.string(),
-    env: z.string(),
-})
+  PORT: z.coerce.number().default(5001),
+  DATABASE_URL: z.string(),
+  env: z.enum(["production", "development", "test"]),
+  JWT_ACCESS_SECRET: z.string(),
+  JWT_REFRESH_SECRET: z.string(),
+  ACCESS_TOKEN_EXPIRES_DAYS:z.coerce.number(),
+  REFRESH_TOKEN_EXPIRES_DAYS:z.coerce.number(),
+  EMAILUSERNAME:z.string(),
+EMAILPASSWORD:z.string(),
+});
 
-if (
-    process.env.NODE_ENV &&
-    !["production", "development", "test"].includes(process.env.NODE_ENV)
-) {
-    throw new Error(
-      "Invalid NODE_ENV value. Allowed values are 'production', 'development', or 'test'.",
-    );
-  }
-  
-  const config = configSchema.parse(process.env);
-  
-  export { config };
-
-export default config
+const config = configSchema.parse(process.env);
+export { config };

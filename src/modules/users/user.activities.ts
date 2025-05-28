@@ -27,7 +27,7 @@ class userActivityManager{
         this.payload = payload;
 
         this.randomString = crypto.randomBytes(16).toString("hex");
-      
+    
         this.accessToken = generateAccessToken(this.payload.email);
     };
     

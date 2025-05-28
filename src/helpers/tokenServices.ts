@@ -43,15 +43,3 @@ export const verifyToken = (token: string, secret: string) => {
     }
 };
 
-// Function to extract IP Address
-export const getIpAddress = (req: Request): string => {
-    return (
-        (req.headers['x-forwarded-for'] as string | string[] || '').toString() || 
-
-        req.socket.remoteAddress || 
-
-        req.ip || 
-        
-        "Unknown"
-    );
-};

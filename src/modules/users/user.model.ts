@@ -1,6 +1,5 @@
-import { pgTable, serial, varchar, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, serial, varchar, timestamp, uuid, integer, boolean } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import { Payment } from 'modules/payment/payment.model';
 
 export const User = pgTable('users', {
     id: uuid('id').default(sql`gen_random_uuid()`).primaryKey(),
@@ -14,8 +13,20 @@ export const User = pgTable('users', {
     email: varchar('email', { length: 255 }).notNull().unique(),
 
     password: varchar('password', { length: 255 }).notNull(),
+    
+    verificationCode: varchar('verificationCode', { length: 6 }).default(null),
 
-    paymentReceipt: varchar('payment', { length: 255 }),
+    otpCreatedAt: timestamp('otp_created_at').defaultNow(),
+
+    otpExpiresAt: timestamp('otp_expires_at').defaultNow(),
+    
+    otpRequestCount: integer("otp_request_count").notNull().default(0),
+
+    isVerified: boolean("isVerified").default(false),
+
+    refreshToken: varchar("refresh_token").default(null),
+
+    paymentReceipt: varchar('payment', { length: 255 }).default(null),
 
     createdAt: timestamp('created_at').defaultNow(),
 
