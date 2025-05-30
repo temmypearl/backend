@@ -2,11 +2,16 @@ import express from 'express';
 const router = express.Router();
 
 import { authUserRoute } from './auth.route';
+import roomRoutes from './room.route'
 
 const defaultRoutes = [
 {
     path: '/auth/users',
     route: authUserRoute,
+},
+{
+  path:'hotel',
+  route: roomRoutes
 }
 ];
 

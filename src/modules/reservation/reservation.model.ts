@@ -1,83 +1,26 @@
-import { Table, Column, Model, DataType, BeforeCreate } from 'sequelize-typescript';
-import bcrypt from 'bcrypt';
+// src/modules/reservation/reservation.model.ts
+import { pgTable, serial, varchar, integer, date, uuid } from 'drizzle-orm/pg-core';
 
-@Table({
-    tableName: 'Reservation',
-    timestamps: true,
-})
-class Reservation extends Model<Reservation> {
-    @Column({
-        type: DataType.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-        })
-        id!: number;
+export const Reservation = pgTable('Reservation', {
+    id: uuid('id').defaultRandom().primaryKey(),
 
-    @Column({
-        type: DataType.STRING,
-        allowNull: false,
-    })
-    name!: string;
+    name: varchar('name', { length: 255 }).notNull(),
 
-    
-    @Column({
-        type: DataType.STRING,
-        allowNull: false,
-    })
-    phoneNumber!: string;
+    phoneNumber: varchar('phoneNumber', { length: 20 }).notNull(),
 
-    @Column({
-        type: DataType.STRING,
-        allowNull: false,
-        unique: true,
-        validate: {
-        isEmail: true,
-        },
-    })
-    emailAddress!: string;
+    emailAddress: varchar('emailAddress', { length: 255 }).notNull(),
 
-    @Column({
-        type: DataType.DATE,
-        allowNull: false,
-    })
-    checkInDate!: Date;
+    checkInDate: date('checkInDate', { mode: 'date' }).notNull(),
 
-    @Column({
-        type: DataType.DATE,
-        allowNull: false,
-    })
-    checkOutDate!: Date;
+    checkOutDate: date('checkOutDate', { mode: 'date' }).notNull(),
 
-    @Column({
-        type: DataType.INTEGER,
-        allowNull: false,
-    })
-    noOfChildren!: number;
+    noOfChildren: integer('noOfChildren').default(0),
 
-    @Column({
-        type: DataType.INTEGER,
-        allowNull: false,
-    })
-    noOfAdult!: number;
-     
-    @Column({
-        type: DataType.STRING,
-        allowNull: false,
-    })
-    specialRequest!: string;
+    noOfAdult: integer('noOfAdult').notNull(),
 
-    @Column({
-        type: DataType.STRING,
-        allowNull: true,
-    })
-    code!: string;
+    specialRequest: varchar('specialRequest', { length: 1000 }).default("nothing"),
 
-    @Column({
-        type: DataType.STRING,
-        allowNull: true
-    })
-    paymentRefrence!: string
+    code: varchar('code', { length: 255 }),
 
-    }
-
-export { Reservation}
+    paymentRefrence: varchar('paymentRefrence', { length: 255 }),
+});

@@ -6,8 +6,7 @@ import { authValidation } from "./../users/user.validation";
 
 
 const authUserRoute = express.Router();
-const authDoctorRoute = express.Router();
-const authHealthCareRoute = express.Router();
+
 
 authUserRoute.post("/signup", validateData(authValidation.registerSchema), userController.signin);
 authUserRoute.post("/verify-account", validateData(authValidation.verifySchema), userController.verifyAccount);
@@ -15,4 +14,4 @@ authUserRoute.post("/login", validateData(authValidation.LoginSchema), userContr
 authUserRoute.post("/resend-otp", validateData(authValidation.verifySchema), userController.resendOtp);
 
 
-export { authUserRoute, authDoctorRoute, authHealthCareRoute };
+export { authUserRoute, };

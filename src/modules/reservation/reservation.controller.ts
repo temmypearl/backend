@@ -25,9 +25,9 @@ const Register = Asyncly(async(req: Request, res: Response, next: NextFunction) 
             try {
                 const data = result.data;
 
-                const registerUser = await Reservation.create({
+                // const registerUser = await Reservation.create({
                     
-                })
+                // })
             } catch (error) {
                 
             }
