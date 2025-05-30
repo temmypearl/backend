@@ -2,8 +2,8 @@ import { Express, Request, Response } from "express";
 import { eq, sql } from 'drizzle-orm';
 import { roomModel } from "./room.model";
 import { roomDetails } from "./room.validation";
-import { Asyncly } from "src/extension";
-import { db } from "src/drizzle/db";
+import { Asyncly } from "../../extension";
+import { db } from "../../drizzle/db";
 
 const getRooms = Asyncly(async (req, res): Promise<any> => {
 
