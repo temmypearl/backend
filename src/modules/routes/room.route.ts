@@ -1,7 +1,7 @@
 import { userController } from "../users/user.controller";
 
 
-import express from "express";
+import express, { Request, Response } from "express";
 import { validateData } from "./../../middlewares/validation";
 import {roomController}  from "./../room/room.controller";
 import { registerValidation } from "../reservation/reservation.validation";

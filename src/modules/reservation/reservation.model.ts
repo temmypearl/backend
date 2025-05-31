@@ -1,6 +1,7 @@
 // src/modules/reservation/reservation.model.ts
 import { pgTable, serial, varchar, integer, date, uuid } from 'drizzle-orm/pg-core';
 import { User } from './../users/user.model';
+import { roomModel } from './../room/room.model';
 export const Reservation = pgTable('Reservation', {
     id: uuid('id').defaultRandom().primaryKey(),
 
@@ -9,7 +10,7 @@ export const Reservation = pgTable('Reservation', {
     phoneNumber: varchar('phoneNumber', { length: 20 }).notNull(),
 
     emailAddress: varchar('emailAddress', { length: 255 }),
-    
+
     // emailAddress: varchar('emailAddress', { length: 255 }).references(()=> User.email),
 
     checkInDate: date('checkInDate', { mode: 'date' }).notNull(),
@@ -26,7 +27,14 @@ export const Reservation = pgTable('Reservation', {
 
     paymentStatus: varchar('paymentStatus').default("Pending"),
 
-    paymentRefrence: varchar('paymentRefrence', { length: 255 }).default(null),
+    paymentRefrence: varchar('paymentRefrence', { length: 255 }).default(null).unique(),
 
-    totalPrice : integer('totalPrice').default(0)
+    totalPrice : integer('totalPrice').default(0),
+
+    roomNumber: integer('roomNumber').references(()=> roomModel.roomNo),
+
+    roomDetails: varchar('roomDetails').default(null),
+
+    roomAmanities: varchar('roomAmanities').default(null),
+    
 })

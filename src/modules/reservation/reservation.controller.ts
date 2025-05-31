@@ -8,27 +8,9 @@ import { roomModel } from "./../room/room.model";
 import { eq } from "drizzle-orm";
 
 const Register = Asyncly(async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-
-    // Step 1: Create reservation
     const { name, emailAddress, phoneNumber, specialRequest, checkInDate, checkOutDate, noOfAdult, noOfChildren } = req.body;
 
-
-    const reservation = await db.insert(Reservation).values({
-        name,
-        emailAddress,
-        phoneNumber,
-        specialRequest,
-        checkInDate,
-        checkOutDate,
-        noOfAdult,
-        noOfChildren,
-
-    });
-    const reservationDetails = await db
-        .select()
-        .from(Reservation)
-        .where(eq(Reservation.emailAddress, emailAddress));
-    // Step 2: Find available room of preferred type (optional: filter by roomType, etc.)
+    // Step 1: Check available room
     const availableRoom = await db
         .select()
         .from(roomModel)
@@ -42,53 +24,64 @@ const Register = Asyncly(async (req: Request, res: Response, next: NextFunction)
     const roomToReserve = availableRoom[0];
     const checkIn = new Date(checkInDate);
     const checkOut = new Date(checkOutDate);
-    const timeDiff = checkOut.getTime() - checkIn.getTime();
-    const numberOfNights = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+    const numberOfNights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+    const totalAmount = roomToReserve.roomPrice * numberOfNights;
 
-    const roomPrice = roomToReserve.roomPrice;
+    // Step 2: Create reservation
+    const [newReservation] = await db
+        .insert(Reservation)
+        .values({
+            name,
+            emailAddress,
+            phoneNumber,
+            specialRequest,
+            checkInDate,
+            checkOutDate,
+            noOfAdult,
+            noOfChildren,
+            roomNumber: roomToReserve.roomNo,
+            roomAmanities: roomToReserve.roomAmenities,
+            roomDetails: roomToReserve.roomType,
+            totalPrice: totalAmount,
+            paymentStatus: "Pending"
+        })
+        .returning();
 
-    const totalAmount = roomPrice * numberOfNights;
-    // Step 3: Update room availability to false
+    // Step 3: Update room availability
     await db
         .update(roomModel)
         .set({ roomAvailability: false })
         .where(eq(roomModel.roomNo, roomToReserve.roomNo));
 
-    // chedule room availability reset after 15 minutes (900000 ms)
+    // Step 4: Timeout to reset room
     setTimeout(async () => {
         try {
-            // Re-fetch the reservation or check payment status
-            const currentReservation = await db
+            const [currentReservation] = await db
                 .select()
                 .from(Reservation)
-                .where(eq(Reservation.emailAddress, emailAddress));
+                .where(eq(Reservation.id, newReservation.id));
 
-            if (currentReservation.length > 0) {
-                // Suppose you have a field 'paymentStatus' to check if paid or not
-                const paymentStatus = currentReservation[0].paymentStatus;
+            if (currentReservation?.paymentStatus !== 'paid') {
+                await db
+                    .update(roomModel)
+                    .set({ roomAvailability: true })
+                    .where(eq(roomModel.roomNo, roomToReserve.roomNo));
 
-                // If still unpaid or status pending, free the room
-                if (paymentStatus !== 'paid') {
-                    await db
-                        .update(roomModel)
-                        .set({ roomAvailability: true })
-                        .where(eq(roomModel.roomNo, roomToReserve.roomNo));
-
-                    console.log(`Room ${roomToReserve.roomNo} availability reset after timeout`);
-                }
+                console.log(`Room ${roomToReserve.roomNo} availability reset after timeout`);
             }
         } catch (error) {
             console.error('Error resetting room availability:', error);
         }
-    }, 15 * 60 * 1000);
+    }, 15 * 60 * 1000); // 15 minutes
 
     res.status(201).json({
         message: "Reservation successful, now pay",
-        totalAmount: totalAmount,
-        reservationData: reservationDetails
+        totalAmount,
+        reservationData: newReservation,
+        roomToReserve
     });
-
 });
+
 
 export const reservatons = { Register }
 
