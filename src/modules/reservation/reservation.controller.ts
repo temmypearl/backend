@@ -8,11 +8,9 @@ import { roomModel } from "./../room/room.model";
 import { eq } from "drizzle-orm";
 
 const Register = Asyncly(async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    const result = registerValidation.registerSchema.safeParse(req.body);
-
 
     // Step 1: Create reservation
-    const { name, emailAddress, phoneNumber, specialRequest, checkInDate, checkOutDate, noOfAdult, noOfChildren } = result.data;
+    const { name, emailAddress, phoneNumber, specialRequest, checkInDate, checkOutDate, noOfAdult, noOfChildren } = req.body;
 
 
     const reservation = await db.insert(Reservation).values({
@@ -24,12 +22,12 @@ const Register = Asyncly(async (req: Request, res: Response, next: NextFunction)
         checkOutDate,
         noOfAdult,
         noOfChildren,
-        
+
     });
-   const reservationDetails = await db
-  .select()
-  .from(Reservation)
-  .where(eq(Reservation.emailAddress, emailAddress));
+    const reservationDetails = await db
+        .select()
+        .from(Reservation)
+        .where(eq(Reservation.emailAddress, emailAddress));
     // Step 2: Find available room of preferred type (optional: filter by roomType, etc.)
     const availableRoom = await db
         .select()
@@ -56,6 +54,33 @@ const Register = Asyncly(async (req: Request, res: Response, next: NextFunction)
         .set({ roomAvailability: false })
         .where(eq(roomModel.roomNo, roomToReserve.roomNo));
 
+    // chedule room availability reset after 15 minutes (900000 ms)
+    setTimeout(async () => {
+        try {
+            // Re-fetch the reservation or check payment status
+            const currentReservation = await db
+                .select()
+                .from(Reservation)
+                .where(eq(Reservation.emailAddress, emailAddress));
+
+            if (currentReservation.length > 0) {
+                // Suppose you have a field 'paymentStatus' to check if paid or not
+                const paymentStatus = currentReservation[0].paymentStatus;
+
+                // If still unpaid or status pending, free the room
+                if (paymentStatus !== 'paid') {
+                    await db
+                        .update(roomModel)
+                        .set({ roomAvailability: true })
+                        .where(eq(roomModel.roomNo, roomToReserve.roomNo));
+
+                    console.log(`Room ${roomToReserve.roomNo} availability reset after timeout`);
+                }
+            }
+        } catch (error) {
+            console.error('Error resetting room availability:', error);
+        }
+    }, 15 * 60 * 1000);
 
     res.status(201).json({
         message: "Reservation successful, now pay",

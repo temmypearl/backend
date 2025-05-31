@@ -3,6 +3,9 @@ import { config } from './../../config';
 import https from 'https';
 import { Asyncly } from '../../extension';
 import axios from 'axios';
+import { db } from '../../drizzle/db';
+import { Reservation } from './../reservation/reservation.model';
+import { eq} from "drizzle-orm"
 
 export const initializePay = (req: Request, res: Response) => {
     const {
@@ -51,10 +54,13 @@ export const initializePay = (req: Request, res: Response) => {
             data += chunk;
         });
 
-        paystackRes.on('end', () => {
+        paystackRes.on('end', async () => {
             try {
                 const response = JSON.parse(data);
-                console.log(response);
+                await db.update(Reservation)
+                    .set({ paymentRefrence: response.data.reference })
+                    .where(eq(Reservation.emailAddress, emailAddress));
+            
                 res.status(200).json(response);
             } catch (err) {
                 console.error('Error parsing Paystack response:', err);
@@ -64,7 +70,6 @@ export const initializePay = (req: Request, res: Response) => {
     });
 
     paystackReq.on('error', error => {
-        console.error('Paystack Error:', error);
         res.status(500).json({ error: 'Payment initialization failed' });
     });
 
@@ -90,15 +95,16 @@ const verifyPayment = Asyncly(async (req: Request, res: Response) => {
         );
 
         const data = response.data.data;
-        console.log(data);
 
         if (data.status === 'success') {
+            await db.update(Reservation)
+            .set({ paymentStatus: 'paid' })
+            .where(eq(Reservation.paymentRefrence, reference));
             return res.status(200).send('Payment successful. Thank you!');
         } else {
             return res.status(400).send('Payment failed or was not completed.');
         }
     } catch (error: any) {
-        console.error('Error verifying payment:', error.message || error);
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 });

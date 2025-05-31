@@ -1,6 +1,6 @@
 // src/modules/reservation/reservation.model.ts
 import { pgTable, serial, varchar, integer, date, uuid } from 'drizzle-orm/pg-core';
-
+import { User } from './../users/user.model';
 export const Reservation = pgTable('Reservation', {
     id: uuid('id').defaultRandom().primaryKey(),
 
@@ -8,7 +8,9 @@ export const Reservation = pgTable('Reservation', {
 
     phoneNumber: varchar('phoneNumber', { length: 20 }).notNull(),
 
-    emailAddress: varchar('emailAddress', { length: 255 }).notNull(),
+    emailAddress: varchar('emailAddress', { length: 255 }),
+    
+    // emailAddress: varchar('emailAddress', { length: 255 }).references(()=> User.email),
 
     checkInDate: date('checkInDate', { mode: 'date' }).notNull(),
 

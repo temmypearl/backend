@@ -11,12 +11,7 @@ const registerSchema = z.object({
         .string({ required_error: 'Email address is required' })
         .nonempty({ message: 'Email address is required' })
         .email({ message: 'Invalid email address' }),
-
-    password: z
-        .string({ required_error: 'Password is required' })
-        .nonempty({ message: 'Password is required' })
-        .min(6, { message: 'Password must be at least 6 characters long' }),
-
+        
     phoneNumber: z
         .string({ required_error: 'Phone number is required' })
         .nonempty({ message: 'Phone number is required' })
