@@ -12,7 +12,7 @@ const Register = Asyncly(async (req: Request, res: Response, next: NextFunction)
 
 
     // Step 1: Create reservation
-    const { name, emailAddress, phoneNumber, specialRequest, checkInDate, checkOutDate, noOfAdult, noOfChildren, paymentRefrence } = result.data;
+    const { name, emailAddress, phoneNumber, specialRequest, checkInDate, checkOutDate, noOfAdult, noOfChildren } = result.data;
 
 
     const reservation = await db.insert(Reservation).values({
@@ -24,12 +24,12 @@ const Register = Asyncly(async (req: Request, res: Response, next: NextFunction)
         checkOutDate,
         noOfAdult,
         noOfChildren,
-        paymentRefrence
+        
     });
    const reservationDetails = await db
   .select()
   .from(Reservation)
-  .where(eq(Reservation.paymentRefrence, paymentRefrence));
+  .where(eq(Reservation.emailAddress, emailAddress));
     // Step 2: Find available room of preferred type (optional: filter by roomType, etc.)
     const availableRoom = await db
         .select()
@@ -58,8 +58,7 @@ const Register = Asyncly(async (req: Request, res: Response, next: NextFunction)
 
 
     res.status(201).json({
-        message: "Reservation successful",
-        reservedRoom: roomToReserve,
+        message: "Reservation successful, now pay",
         totalAmount: totalAmount,
         reservationData: reservationDetails
     });

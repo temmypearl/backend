@@ -22,5 +22,9 @@ export const Reservation = pgTable('Reservation', {
 
     code: varchar('code', { length: 255 }),
 
-    paymentRefrence: varchar('paymentRefrence', { length: 255 }),
-});
+    paymentStatus: varchar('paymentStatus').default("Pending"),
+
+    paymentRefrence: varchar('paymentRefrence', { length: 255 }).default(null),
+
+    totalPrice : integer('totalPrice').default(0)
+})

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { string, z } from "zod";
 import dotenv from "dotenv";
 import path from "path";
 
@@ -13,7 +13,8 @@ const configSchema = z.object({
   ACCESS_TOKEN_EXPIRES_DAYS:z.coerce.number(),
   REFRESH_TOKEN_EXPIRES_DAYS:z.coerce.number(),
   EMAILUSERNAME:z.string(),
-EMAILPASSWORD:z.string(),
+  EMAILPASSWORD:z.string(),
+  paystacktestsecretkey:string()
 });
 
 const config = configSchema.parse(process.env);

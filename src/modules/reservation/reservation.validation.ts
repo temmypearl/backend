@@ -39,10 +39,10 @@ const registerSchema = z.object({
     noOfChildren: z
         .number({ required_error: 'Number of children is required' }),
 
-    paymentRefrence: z
-        .string()
-        .max(50, { message: 'Payment reference must be less than 50 characters' })
-        .optional(),
+    // paymentRefrence: z
+    //     .string()
+    //     .max(50, { message: 'Payment reference must be less than 50 characters' })
+    //     .optional(),
     // code: z
     //     .string({ required_error: 'Code is required' })
     //     .nullable()
