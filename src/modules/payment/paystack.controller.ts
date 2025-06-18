@@ -10,6 +10,7 @@ import { roomModel } from './../room/room.model'; // Room schema/model (unused i
 import { eq } from "drizzle-orm"; // helper function to build SQL queries
 import { error } from 'console'; // (unused here)
 import { refundTable } from './payment.model';
+import { ApiError } from './../../middlewares';
 
 // Initializes payment on Paystack
 const initializePay = Asyncly(async (req: Request, res: Response) => {
@@ -24,9 +25,15 @@ const initializePay = Asyncly(async (req: Request, res: Response) => {
         .select()
         .from(Reservation)
         .where(eq(Reservation.id, reservationId));
-
+    
     if (!OrderedRoom[0]) {
-        return res.status(404).json({ error: "Reservation not found" });
+        throw new ApiError(400, "Cannot cancel a paid reservation", false);
+    }
+    if(OrderedRoom[0].paymentStatus =="paid"){
+       throw new ApiError(400, "Cannot cancel a paid reservation", false);
+    }
+    if(OrderedRoom[0].paymentStatus == "cancelled"){
+        throw new ApiError(400, "Cannot cancel a paid reservation", false);
     }
 
     const reservation = OrderedRoom[0];
@@ -135,7 +142,10 @@ const verifyPayment = Asyncly(async (req: Request, res: Response) => {
                 message: 'Payment successful',
                 reservation: roomOrdered
             });
-
+            //later when the front end url is ready
+            // return res.redirect(
+            //     `https://yourfrontend.com/payment-success?reference=${reference}&amount=${roomOrdered.totalPrice}&name=${encodeURIComponent(roomOrdered.name)}`
+            // );
         } else {
             return res.status(400).json({ error: 'Payment failed or not completed' });
         }

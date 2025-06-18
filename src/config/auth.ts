@@ -14,7 +14,9 @@ const configSchema = z.object({
   REFRESH_TOKEN_EXPIRES_DAYS:z.coerce.number(),
   EMAILUSERNAME:z.string(),
   EMAILPASSWORD:z.string(),
-  paystacktestsecretkey:string()
+  paystacktestsecretkey:string(),
+  flutterwaveSecretKey: string(),
+  flutterwavePublicKey: string()
 });
 
 const config = configSchema.parse(process.env);
