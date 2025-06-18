@@ -5,7 +5,7 @@
     export class TokenService {
     static generateAccessToken(payload: ITokenPayload): string {
         return jwt.sign({ payload }, config.JWT_ACCESS_SECRET, {
-        expiresIn: `${config.ACCESS_TOKEN_EXPIRES_DAYS}m`,
+        expiresIn: `${config.ACCESS_TOKEN_EXPIRES_DAYS}h`,
         algorithm: 'HS256',
         });
     }

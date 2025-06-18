@@ -6,100 +6,79 @@ import httpStatus from "http-status";
 import { TokenExpiredError } from "jsonwebtoken";
 import { ApiError } from "./apiError";
 import { User } from "../modules/users/user.model";
-import { db } from "src/drizzle/db";
-import { eq } from "drizzle-orm"; 
+import { db } from "../drizzle/db";
+import { eq } from "drizzle-orm";
 
 export interface AuthenticatedRequest extends Request {
-    token: string | ITokenPayload;
-    user?: {
-        id: string;
-        email: string;
-        name: string;
-    };
+  token: string | ITokenPayload;
+  user?: {
+    id: string;
+    email: string;
+    name: string;
+  };
 }
 
-// const isTokenBlacklisted = async (token: string): Promise<boolean> => {
-//   const blacklistedToken = await prisma.refreshToken.findFirst({
-//     where: { token },
-//   });
-//   return !!blacklistedToken;
-// };
+const extractToken = (req: Request): string => {
+  const authHeader = req.header("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid authorization header format");
+  }
+  return authHeader.split(" ")[1];
+};
+
+const verifyAndDecodeToken = async (token: string): Promise<ITokenPayload> => {
+  try {
+    const payload = TokenService.verifyAccessToken(token) as ITokenPayload;
+    if (!payload.id) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid token payload");
+    }
+    return payload;
+  } catch (err) {
+    if (err instanceof TokenExpiredError) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, "Token expired. Please log in again");
+    }
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid token");
+  }
+};
+
+const findUser = async (userId: string) => {
+  const userResult = await db
+    .select()
+    .from(User)
+    .where(eq(User.id, userId));
+
+  const user = userResult[0];
+  if (!user) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "User not found");
+  }
+  return user;
+};
 
 export const requireAuth = async (
-    req: AuthenticatedRequest,
-    res: Response,
-    next: NextFunction,
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
 ): Promise<void> => {
-    try {
-        const token = req.header("Authorization")?.split(" ")[1];
+  try {
+    const token = extractToken(req);
+    logger.info("Processing authentication token");
 
-        if (!token) {
-            logger.warn("No token provided for authentication");
-            throw new ApiError(httpStatus.UNAUTHORIZED, "No token provided");
-        }
-        logger.info(`Received token: ${token}`);
+    const payload = await verifyAndDecodeToken(token);
+    const user = await findUser(payload.id);
 
-        // if (await isTokenBlacklisted(token)) {
-        //   logger.warn("Token is blacklisted");
-        //   throw new ApiError(
-        //     httpStatus.UNAUTHORIZED,
-        //     "Unauthorized: Token has been revoked",
-        //   );
-        //   return;
-        // }
+    req.user = {
+      id: user.id,
+      email: user.email,
+      name: `${user.firstName} ${user.lastName}`,
+    };
 
-        let payload: ITokenPayload;
-
-        try {
-            payload = TokenService.verifyAccessToken(token) as ITokenPayload;
-            logger.info(`Decoded Token Payload: ${JSON.stringify(payload)}`);
-        } catch (err) {
-            logger.error("Token verification failed:", err);
-            if (err instanceof TokenExpiredError) {
-                throw new ApiError(
-                    httpStatus.UNAUTHORIZED,
-                    "Token expired. Please log in again",
-                );
-            }
-            logger.error("Invalid token", err);
-            throw new ApiError(
-                httpStatus.UNAUTHORIZED,
-                "Unauthorized: Invalid token",
-            );
-        }
-
-        if (!payload.id) {
-            logger.warn("Invalid token payload");
-            throw new ApiError(
-                httpStatus.UNAUTHORIZED,
-                "Unauthorized: Invalid token",
-            );
-        }
-        
-
-        const userResult = await db
-            .select()
-            .from(User)
-            .where(eq(User.id, payload.id));
-
-        const user = userResult[0];
-
-        if (!user) {
-            logger.warn("User not found");
-            throw new ApiError(
-                httpStatus.UNAUTHORIZED,
-                "Unauthorized: User not found",
-            );
-        }
-
-        req.user = {
-            id: user.id,
-            email: user.email,
-            name: `${user.firstName} ${user.lastName}`,
-        };
-        next();
-    } catch (error) {
-        logger.error("Authentication failed", error);
-        next(error);
+    next();
+  } catch (error) {
+    if (error instanceof ApiError) {
+      next(error);
+    } else {
+      logger.error("Authentication failed:", error);
+      next(new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Authentication failed"));
     }
+  }
 };

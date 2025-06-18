@@ -184,7 +184,7 @@ const login = Asyncly( async (req, res) => {
     if(!user[0].isVerified){
         throw new ApiError(409, 'User not verified')
     }
-
+console.log(data.password, user[0].password)
     const confirmPassword = await AuthTokens.comparePassword(data.password, user[0].password)
     if (!confirmPassword){
         throw new ApiError(409, 'Wrong email or Password')

@@ -59,7 +59,7 @@
   <ul id="messages"></ul>
 
   <script>
-    const socket = io("http://localhost:4005"); // Change if your server is running elsewhere
+    const socket = io("http://localhost:4005");
 
     const messagesList = document.getElementById("messages");
     const userIdInput = document.getElementById("userId");
@@ -74,8 +74,7 @@
     });
 
     socket.on("chat:receive", (msg) => {
-      // msg example: { conversationId, senderId, content, timestamp }
-      addMessage(`From ${msg.senderId || "unknown"}: "${msg.content}" (at ${new Date(msg.timestamp).toLocaleTimeString()})`);
+      addMessage(`From ${msg.senderId}: "${msg.content}" (at ${new Date(msg.timestamp).toLocaleTimeString()})`);
     });
 
     socket.on("error", (err) => {
@@ -102,10 +101,10 @@
       }
 
       socket.emit("chat:send", {
-        userId: recipientId,  // recipient user ID
-        senderId: senderId,
-        content: message,
-        doctorId: doctorId,
+        recipientId,
+        senderId,
+        doctorId,
+        content: message
       });
 
       addMessage(`Sent: "${message}" to userId: ${recipientId} (doctorId: ${doctorId})`);
@@ -115,7 +114,7 @@
       const li = document.createElement("li");
       li.textContent = msg;
       messagesList.appendChild(li);
-      messagesList.scrollTop = messagesList.scrollHeight; // auto scroll to bottom
+      messagesList.scrollTop = messagesList.scrollHeight;
     }
   </script>
 </body>

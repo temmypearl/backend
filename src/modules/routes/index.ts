@@ -2,7 +2,8 @@ import express from 'express';
 const router = express.Router();
 
 import { authUserRoute } from './auth.route';
-import {roomRoutes} from './room.route'
+import {reservationRoutes, roomRoutes} from './room.route'
+import path from 'path';
 
 const defaultRoutes = [
 {
@@ -12,6 +13,10 @@ const defaultRoutes = [
 {
   path:'/hotel',
   route: roomRoutes
+},
+{
+  path:'/reservation',
+  route: reservationRoutes
 }
 ];
 

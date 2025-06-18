@@ -1,9 +1,54 @@
 import http from 'http';
 import app from '../server';
-import { connectDB, pool } from '../drizzle/db'; // ✅ import pool
+import { connectDB, pool } from '../drizzle/db';
 import { logger, config } from '../config';
+import { Server } from 'socket.io';
 
 const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
+
+// Store user socket mappings
+const userSocketMap = new Map();
+
+io.on('connection', (socket) => {
+  logger.info(`Socket connected: ${socket.id}`);
+
+  socket.on('register', (userId: string) => {
+    userSocketMap.set(userId, socket.id);
+    logger.info(`User ${userId} registered with socket ${socket.id}`);
+  });
+
+  socket.on('chat:send', ({ senderId, recipientId, doctorId, content }) => {
+    const recipientSocketId = userSocketMap.get(recipientId);
+    if (recipientSocketId) {
+      io.to(recipientSocketId).emit('chat:receive', {
+        conversationId: `${senderId}-${recipientId}-${doctorId}`,
+        senderId,
+        content,
+        timestamp: new Date().toISOString()
+      });
+      logger.info(`Message sent from ${senderId} to ${recipientId}`);
+    } else {
+      socket.emit('error', { message: 'Recipient not found or offline' });
+    }
+  });
+
+  socket.on('disconnect', () => {
+    // Remove user from mapping when they disconnect
+    for (const [userId, socketId] of userSocketMap.entries()) {
+      if (socketId === socket.id) {
+        userSocketMap.delete(userId);
+        logger.info(`User ${userId} disconnected`);
+        break;
+      }
+    }
+  });
+});
 
 const startApp = async () => {
   try {
@@ -11,21 +56,18 @@ const startApp = async () => {
     logger.info('\x1b[32mDB:\x1b[0m SQL Connected');
     server.listen(config.PORT, '0.0.0.0', () => {
       logger.info(`\x1b[36mServer:\x1b[0m Running on http://localhost:${config.PORT}`);
-    }
-    
-  );
+    });
   } catch (error) {
     logger.error('\x1b[31mError:\x1b[0m Failed to start server:', error);
     process.exit(1);
   }
 };
 
-// Function to gracefully shut down the server and close connections
 const gracefulShutdown = async () => {
   logger.info('\x1b[33mServer:\x1b[0m Shutting down...');
 
   try {
-    await pool.end(); //Disconnect from Postgres
+    await pool.end();
     logger.info('\x1b[32mDB:\x1b[0m Disconnected');
 
     server.close(() => {

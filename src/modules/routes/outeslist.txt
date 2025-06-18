@@ -1,0 +1,60 @@
+📂 1. Authentication & User Management (/auth/users)
+Method	Endpoint	Protected	Purpose
+POST	/auth/users/signin	❌	Register New User
+POST	/auth/users/login	❌	User Login
+POST	/auth/users/verify-account	✅	Verify User OTP
+POST	/auth/users/resend-otp	✅	Resend OTP
+
+🏨 2. Rooms Management (/hotel)
+Method	Endpoint	Protected	Purpose
+GET	/hotel/getRooms	✅	Fetch All Rooms
+POST	/hotel/reserveRoom	✅	Reserve Room
+POST	/hotel/payment/initiate-payment	✅	Initiate Payment (Paystack)
+GET	/hotel/payment/verify	✅	Verify Payment
+
+📑 3. Reservations (/reservations)
+Method	Endpoint	Protected	Purpose
+GET	/reservations/history	✅	View Reservation History
+GET	/reservations/:id	✅	Get Single Reservation
+PATCH	/reservations/:id/cancel	✅	Cancel Reservation
+PATCH	/reservations/:id/modify	✅	Modify Reservation Dates
+POST	/reservations/multiple-booking	✅	Reserve Multiple Rooms
+
+💳 4. Payments (/payment)
+Method	Endpoint	Protected	Purpose
+POST	/payment/refund/:reservationId	✅	Refund Payment
+GET	/payment/invoice/:reservationId	✅	Get Payment Invoice
+GET	/payment/methods	✅	List Available Payment Methods
+
+👤 5. User Profile & Reviews (/users)
+Method	Endpoint	Protected	Purpose
+GET	/users/profile	✅	Get User Profile
+PATCH	/users/profile/update	✅	Update User Profile
+POST	/users/reviews	✅	Submit Room Review
+GET	/users/reviews/:roomId	✅	View Reviews for Specific Room
+GET	/users/dashboard	✅	View User Dashboard
+
+🛡️ 6. Admin (/admin)
+Method	Endpoint	Protected	Purpose
+GET	/admin/dashboard	✅ (Admin)	View Admin Dashboard
+GET	/admin/reports/occupancy	✅ (Admin)	View Occupancy Reports
+GET	/admin/reports/revenue	✅ (Admin)	View Revenue Reports
+GET	/admin/users	✅ (Admin)	List All Users
+
+📂 Admin Staff Management (/admin/staff)
+Method	Endpoint	Protected	Purpose
+GET	/admin/staff	✅ (Admin)	List All Staff
+POST	/admin/staff	✅ (Admin)	Create New Staff
+PATCH	/admin/staff/:staffId	✅ (Admin)	Update Staff
+DELETE	/admin/staff/:staffId	✅ (Admin)	Delete Staff
+
+⚙ Summary of Route Count
+Category	Count
+Authentication	4
+Room Management	4
+Reservation	5
+Payment	3
+User Profile	5
+Admin (General)	4
+Admin (Staff)	4
+TOTAL ROUTES	29
