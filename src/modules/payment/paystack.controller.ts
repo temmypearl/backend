@@ -9,7 +9,7 @@ import { Reservation } from './../reservation/reservation.model'; // Reservation
 import { roomModel } from './../room/room.model'; // Room schema/model (unused in this file)
 import { eq } from "drizzle-orm"; // helper function to build SQL queries
 import { error } from 'console'; // (unused here)
-
+import { refundTable } from './payment.model';
 // ===========================
 // FUNCTION 1: initializePay
 // ===========================
@@ -167,9 +167,11 @@ const verifyPayment = Asyncly(async (req: Request, res: Response) => {
     }
 });
 
-const refundPayment = Asyncly(async (req: Request, res: Response) => {
+const requestRefund = Asyncly(async (req: Request, res: Response) => {
     const { reservationId } = req.params;
+    const { reason } = req.body;
 
+    // Ensure reservation exists
     const [reservation] = await db
         .select()
         .from(Reservation)
@@ -179,21 +181,18 @@ const refundPayment = Asyncly(async (req: Request, res: Response) => {
         return res.status(404).json({ error: "Reservation not found" });
     }
 
-    if (reservation.paymentStatus !== "paid") {
-        return res.status(400).json({ error: "Reservation not paid yet" });
-    }
+    // Save the refund request
+    const [createdRequest] = await db
+        .insert(refundTable)
+        .values({ reservationId, reason, status: "pending" })
+        .returning();
 
-    // Mark reservation as refunded (optional: add refund reason/date, etc.)
-    await db
-        .update(Reservation)
-        .set({ paymentStatus: "refunded" })
-        .where(eq(Reservation.id, reservationId));
-
-    res.status(200).json({
-        message: "Refund initiated successfully. Please note: refunds are processed manually.",
-        reservationId
+    res.status(201).json({
+        message: "Refund request submitted",
+        data: createdRequest,
     });
 });
+
 
 const getInvoice = Asyncly(async (req: Request, res: Response) => {
     const { reservationId } = req.params;
@@ -237,10 +236,67 @@ const getPaymentMethods = Asyncly(async (req: Request, res: Response) => {
     });
 });
 
+const approveRefund = Asyncly(async (req: Request, res: Response) => {
+    const { refundRequestId } = req.params;
+
+    // Fetch refund request
+    const [refund] = await db
+        .select()
+        .from(refundTable)
+        .where(eq(refundTable.id, parseInt(refundRequestId)));
+
+    if (!refund) {
+        return res.status(404).json({ error: "Refund request not found" });
+    }
+
+    if (refund.status !== "pending") {
+        return res.status(400).json({ error: "Refund has already been processed or rejected" });
+    }
+
+    // Fetch reservation to get payment reference
+    const [reservation] = await db
+        .select()
+        .from(Reservation)
+        .where(eq(Reservation.id, refund.reservationId));
+
+    if (!reservation) {
+        return res.status(404).json({ error: "Associated reservation not found" });
+    }
+
+    // Call Paystack refund API
+    const paystackResponse = await axios.post(
+        `https://api.paystack.co/refund`,
+        { transaction: reservation.paymentRefrence },
+        {
+            headers: {
+                Authorization: `Bearer ${config.paystacktestsecretkey}`,
+                'Content-Type': 'application/json',
+            },
+        }
+    );
+
+    // Update refund request status
+    await db
+        .update(refundTable)
+        .set({ status: "refunded" })
+        .where(eq(refundTable.id, parseInt(refundRequestId)));
+
+    // Also update reservation if needed
+    await db
+        .update(Reservation)
+        .set({ paymentStatus: "refunded" })
+        .where(eq(Reservation.id, refund.reservationId));
+
+    res.status(200).json({
+        message: "Refund processed successfully",
+        paystackResponse: paystackResponse.data,
+    });
+});
+
 
 
 // Export the two controller functions
-export const paystackController = { initializePay, verifyPayment, refundPayment , getInvoice};
+export const paystackController = { initializePay,getPaymentMethods, verifyPayment, requestRefund , getInvoice};
 
 
 

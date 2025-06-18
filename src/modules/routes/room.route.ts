@@ -33,7 +33,8 @@ reservationRoutes.patch("/:id/cancel", requireAuth, reservatons.cancelReservatio
 reservationRoutes.patch("/:id/modify", requireAuth, reservatons.modifyReservation);
 reservationRoutes.post("/multiple-booking", requireAuth, reservatons.multipleBooking);
 
-
+// paymentRoutes.post("/request-refund/:reservationId", requireAuth, requestRefund);
+// paymentRoutes.post("/refund/:refundRequestId", requireAdmin, approveRefund);
 export { roomRoutes, reservationRoutes };
 
 
