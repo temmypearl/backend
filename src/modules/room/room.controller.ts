@@ -7,7 +7,22 @@ import { db } from "./../../drizzle/db";
 import { ApiError } from "../../middlewares"; // For error handling
 
 // GET /hotel/getRooms
-const getRooms = Asyncly(async (req, res): Promise<any> => {
+const getRooms = Asyncly(async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    const { roomNo } = req.query;
+
+    if (roomNo) {
+        const [room] = await db
+            .select()
+            .from(roomModel)
+            .where(eq(roomModel.roomNo, parseInt(roomNo as string)));
+
+        if (!room) {
+            return next(new ApiError(404, "Room not found", false));
+        }
+
+        return res.status(200).json({ room });
+    }
+
     const roomsGrouped = await db
         .select({
             roomType: roomModel.roomType,
@@ -25,6 +40,7 @@ const getRooms = Asyncly(async (req, res): Promise<any> => {
 
     res.status(200).json({ roomsGrouped });
 });
+
 
 // POST /hotel/create
 const createRoom = Asyncly(async (req: Request, res: Response, next: NextFunction) => {

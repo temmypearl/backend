@@ -167,8 +167,80 @@ const verifyPayment = Asyncly(async (req: Request, res: Response) => {
     }
 });
 
+const refundPayment = Asyncly(async (req: Request, res: Response) => {
+    const { reservationId } = req.params;
+
+    const [reservation] = await db
+        .select()
+        .from(Reservation)
+        .where(eq(Reservation.id, reservationId));
+
+    if (!reservation) {
+        return res.status(404).json({ error: "Reservation not found" });
+    }
+
+    if (reservation.paymentStatus !== "paid") {
+        return res.status(400).json({ error: "Reservation not paid yet" });
+    }
+
+    // Mark reservation as refunded (optional: add refund reason/date, etc.)
+    await db
+        .update(Reservation)
+        .set({ paymentStatus: "refunded" })
+        .where(eq(Reservation.id, reservationId));
+
+    res.status(200).json({
+        message: "Refund initiated successfully. Please note: refunds are processed manually.",
+        reservationId
+    });
+});
+
+const getInvoice = Asyncly(async (req: Request, res: Response) => {
+    const { reservationId } = req.params;
+
+    const [reservation] = await db
+        .select()
+        .from(Reservation)
+        .where(eq(Reservation.id, reservationId));
+
+    if (!reservation) {
+        return res.status(404).json({ error: "Reservation not found" });
+    }
+
+    res.status(200).json({
+        invoice: {
+            reservationId: reservation.id,
+            amount: reservation.totalPrice,
+            paymentStatus: reservation.paymentStatus,
+            customer: {
+                name: reservation.name,
+                email: reservation.emailAddress,
+                phone: reservation.phoneNumber
+            },
+            dates: {
+                checkIn: reservation.checkInDate,
+                checkOut: reservation.checkOutDate
+            }
+        }
+    });
+});
+const getPaymentMethods = Asyncly(async (req: Request, res: Response) => {
+    res.status(200).json({
+        methods: [
+            {
+                name: "Paystack",
+                type: "online",
+                supportedCurrencies: ["NGN"],
+                instructions: "Secure online payment using debit cards, bank transfers, etc."
+            }
+        ]
+    });
+});
+
+
+
 // Export the two controller functions
-export const paystackController = { initializePay, verifyPayment };
+export const paystackController = { initializePay, verifyPayment, refundPayment , getInvoice};
 
 
 
