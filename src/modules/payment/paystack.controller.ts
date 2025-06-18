@@ -10,116 +10,94 @@ import { roomModel } from './../room/room.model'; // Room schema/model (unused i
 import { eq } from "drizzle-orm"; // helper function to build SQL queries
 import { error } from 'console'; // (unused here)
 import { refundTable } from './payment.model';
-// ===========================
-// FUNCTION 1: initializePay
-// ===========================
 
 // Initializes payment on Paystack
 const initializePay = Asyncly(async (req: Request, res: Response) => {
-    // Extract payment and reservation data from request body
-    const {
-        emailAddress,
-        totalAmount,
-        name,
-        phoneNumber,
-        specialRequest,
-        checkInDate,
-        checkOutDate,
-        noOfAdult,
-        noOfChildren,
-        reservationId 
-    } = req.body;
+    const { reservationId } = req.body;
 
-    // Ensure reservation ID is provided
     if (!reservationId) {
         return res.status(400).json({ error: "Reservation ID is required" });
     }
 
-    // Prepare data to send to Paystack
+    // STEP 1: Find the reservation in DB by ID
+    const OrderedRoom = await db
+        .select()
+        .from(Reservation)
+        .where(eq(Reservation.id, reservationId));
+
+    if (!OrderedRoom[0]) {
+        return res.status(404).json({ error: "Reservation not found" });
+    }
+
+    const reservation = OrderedRoom[0];
+
+    // STEP 2: Build the Paystack postData using our database details
     const postData = JSON.stringify({
-        email: emailAddress,
-        amount: totalAmount * 100, // Paystack accepts amounts in Kobo (₦1000 = 100000)
-        callback_url: 'http://localhost:4000/api/v1/hotel/payment/verify/', // Paystack will call this URL after payment
+        email: reservation.emailAddress,
+        amount: reservation.totalPrice * 100, // in Kobo
+        callback_url: 'http://localhost:4000/api/v1/hotel/payment/verify/',
         metadata: {
-            name,
-            phoneNumber,
-            specialRequest,
-            checkInDate,
-            checkOutDate,
-            noOfAdult,
-            noOfChildren,
+            reservationId: reservation.id,
+            name: reservation.name,
+            phoneNumber: reservation.phoneNumber,
+            specialRequest: reservation.specialRequest,
+            checkInDate: reservation.checkInDate,
+            checkOutDate: reservation.checkOutDate,
+            noOfAdult: reservation.noOfAdult,
+            noOfChildren: reservation.noOfChildren,
         },
     });
 
-    // Configure HTTPS request to Paystack
     const options = {
         hostname: 'api.paystack.co',
         port: 443,
         path: '/transaction/initialize',
         method: 'POST',
         headers: {
-            Authorization: 'Bearer ' + config.paystacktestsecretkey, // Secret key for authentication
+            Authorization: 'Bearer ' + config.paystacktestsecretkey,
             'Content-Type': 'application/json',
             'Content-Length': Buffer.byteLength(postData),
         },
     };
 
-    // Send HTTPS POST request to Paystack to initialize payment
     const paystackReq = https.request(options, paystackRes => {
         let data = '';
 
-        // Collect data as it streams in
-        paystackRes.on('data', chunk => {
-            data += chunk;
-        });
+        paystackRes.on('data', chunk => { data += chunk; });
 
-        // Once all response data is received
         paystackRes.on('end', async () => {
             try {
-                const response = JSON.parse(data); // Parse Paystack's response
+                const response = JSON.parse(data);
+                const reference = response.data.reference;
 
-                // Save the Paystack transaction reference to the reservation in the database
+                //STEP 3: Save the reference to reservation in DB
                 await db.update(Reservation)
-                    .set({ paymentRefrence: response.data.reference })
-                    .where(eq(Reservation.id, reservationId))
-                    .returning();
-
-                // Retrieve updated reservation for confirmation
-                const OrderedRoom = await db
-                    .select()
-                    .from(Reservation)
+                    .set({ paymentRefrence: reference })
                     .where(eq(Reservation.id, reservationId));
 
-                // Respond with Paystack response and reservation info
                 res.status(200).json({
-                    response, 
-                    OrderedRoom: OrderedRoom[0],
+                    authorization_url: response.data.authorization_url,
+                    reference,
                 });
             } catch (err) {
-                console.error('Error parsing Paystack response:', err);
-                res.status(500).json({ error: 'Error parsing Paystack response' });
+                console.error(err);
+                res.status(500).json({ error: 'Error processing Paystack response' });
             }
         });
     });
 
-    // Handle any errors during the HTTPS request
-    paystackReq.on('error', error => {
+    paystackReq.on('error', () => {
         res.status(500).json({ error: 'Payment initialization failed' });
     });
 
-    // Send the request data to Paystack and end the request
     paystackReq.write(postData);
     paystackReq.end();
 });
 
 
-// ===========================
-// FUNCTION 2: verifyPayment
-// ===========================
-
 // Verifies a payment using the Paystack reference
 const verifyPayment = Asyncly(async (req: Request, res: Response) => {
-    // Extract payment reference from query string (?reference=xxxx)
+    // Extract payment reference from query string
     const reference = req.query.reference as string || req.query.trxref as string;
 
     // Validate reference exists

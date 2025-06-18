@@ -14,6 +14,7 @@ import { createRoomSchema, editRoomSchema, deleteRoomSchema } from "../room/room
 
 const reservationRoutes = express.Router();
 const roomRoutes = express.Router();
+const paymentRoutes = express.Router();
 
 // All routes require authentication
 roomRoutes.get("/getRooms", requireAuth, roomController.getRooms);
@@ -33,9 +34,18 @@ reservationRoutes.patch("/:id/cancel", requireAuth, reservatons.cancelReservatio
 reservationRoutes.patch("/:id/modify", requireAuth, reservatons.modifyReservation);
 reservationRoutes.post("/multiple-booking", requireAuth, reservatons.multipleBooking);
 
+
+paymentRoutes.post("/initiate-payment", requireAuth, paystackController.initializePay);
+paymentRoutes.get("/verify", requireAuth, paystackController.verifyPayment);
+paymentRoutes.post("/request-refund/:reservationId", requireAuth, paystackController.requestRefund);
+// paymentRoutes.post("/refund/:refundRequestId", requireAdmin, paystackController.approveRefund);
+paymentRoutes.get("/invoice/:reservationId", requireAuth, paystackController.getInvoice);
+paymentRoutes.get("/methods", paystackController.getPaymentMethods);
+
+
 // paymentRoutes.post("/request-refund/:reservationId", requireAuth, requestRefund);
 // paymentRoutes.post("/refund/:refundRequestId", requireAdmin, approveRefund);
-export { roomRoutes, reservationRoutes };
+export { roomRoutes, reservationRoutes , paymentRoutes};
 
 
 // 4ff777dd-1c95-42af-83ef-af1bdcb3eaa9
