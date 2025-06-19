@@ -100,6 +100,7 @@ const verifyAccount = Asyncly( async (req:Request, res:Response) => {
             id: user[0].id,
             email: user[0].email,
             name: `${user[0].firstName} ${user[0].lastName}`,
+            role:'user'
   };
         const accessToken = TokenService.generateAccessToken(tokenPayload);
         const refreshToken = TokenService.generateRefreshToken(tokenPayload);
@@ -193,6 +194,7 @@ console.log(data.password, user[0].password)
         id: user[0].id,
         email: user[0].email,
         name: `${user[0].firstName} ${user[0].lastName}`,
+        role:'user'
     }
     if(!user[0].refreshToken){
         const refreshToken = TokenService.generateRefreshToken(tokenPayload);

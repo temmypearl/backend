@@ -1,15 +1,13 @@
 import { Request, Response } from 'express';
 import { config } from './../../config'; // configuration (e.g., secret keys)
-import https from 'https'; // Node.js HTTPS module to make API calls
 import { Asyncly } from '../../extension'; // custom wrapper for async functions
 import axios from 'axios'; // HTTP client for simpler API requests
 import { db } from '../../drizzle/db'; // your Drizzle ORM database instance
 import { Reservation } from './../reservation/reservation.model'; // Reservation schema/model
-import { roomModel } from './../room/room.model'; // Room schema/model (unused in this file)
-import { eq } from "drizzle-orm"; // helper function to build SQL queries
-import { error } from 'console'; // (unused here)
-import { refundTable } from './payment.model';
 import { ApiError } from './../../middlewares';
+import { eq } from "drizzle-orm"; // helper function to build SQL queries
+import { roomModel } from './../room/room.model'; // Room schema/model (unused in this file)
+import { refundTable } from './payment.model';
 
 const initializeFlutterwavePayment = Asyncly(async (req: Request, res: Response) => {
     const { reservationId } = req.body;
@@ -26,18 +24,27 @@ const initializeFlutterwavePayment = Asyncly(async (req: Request, res: Response)
     if (!OrderedRoom[0]) {
         return res.status(404).json({ error: "Reservation not found" });
     }
+    if(OrderedRoom[0].paymentStatus == "paid") throw new ApiError(400, "Reservation already paid");
+
+    if(OrderedRoom[0].paymentStatus == "canceled") throw new ApiError(400, "Reservation has already been canceled");
 
     const reservation = OrderedRoom[0];
 
     const paymentData = {
         tx_ref: `resv_${reservation.id}_${Date.now()}`,
-        amount: reservation.totalPrice,
+        
+        amount: reservation.totalPrice/1000,
         currency: 'NGN',
         redirect_url: `https://your-frontend.com/payment/callback`,
         customer: {
             email: reservation.emailAddress,
             phonenumber: reservation.phoneNumber,
             name: reservation.name,
+            specialRequest: reservation.specialRequest,
+            checkInDate: reservation.checkInDate,
+            checkOutDate: reservation.checkOutDate,
+            noOfAdult: reservation.noOfAdult,
+            noOfChildren: reservation.noOfChildren,
         },
         customizations: {
             title: "Hotel Booking Payment",
@@ -60,7 +67,7 @@ const initializeFlutterwavePayment = Asyncly(async (req: Request, res: Response)
 
     res.status(200).json({
         paymentLink: link,
-        reference: paymentData.tx_ref
+        reference: paymentData.tx_ref,
     });
 });
 
@@ -99,3 +106,5 @@ const verifyFlutterwavePayment = Asyncly(async (req: Request, res: Response) => 
         return res.status(400).json({ error: "Payment not successful" });
     }
 });
+const flutterwaveFunctions = {initializeFlutterwavePayment, verifyFlutterwavePayment}
+export {flutterwaveFunctions}

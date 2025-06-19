@@ -219,6 +219,12 @@ const getPaymentMethods = Asyncly(async (req: Request, res: Response) => {
                 type: "online",
                 supportedCurrencies: ["NGN"],
                 instructions: "Secure online payment using debit cards, bank transfers, etc."
+            },
+            {
+                name:"Flutter Wave",
+                type:"online",
+                supportedCurrencies: ["NGN"],
+                instructions: "Secure online payment using debit cards, bank transfers, etc."
             }
         ]
     });

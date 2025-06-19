@@ -9,6 +9,7 @@ import { reservatons } from "../reservation/reservation.controller";
 import { paystackController } from "../payment/paystack.controller";
 import { requireAuth } from "../../middlewares/auth.middleware";
 import { createRoomSchema, editRoomSchema, deleteRoomSchema } from "../room/room.validation";
+import { flutterwaveFunctions } from "../payment/flutterwave.controller";
 
 
 
@@ -41,8 +42,10 @@ paymentRoutes.post("/request-refund/:reservationId", requireAuth, paystackContro
 // paymentRoutes.post("/refund/:refundRequestId", requireAdmin, paystackController.approveRefund);
 paymentRoutes.get("/invoice/:reservationId", requireAuth, paystackController.getInvoice);
 paymentRoutes.get("/methods", paystackController.getPaymentMethods);
+paymentRoutes.post("/flutter_payment", flutterwaveFunctions.initializeFlutterwavePayment);
+paymentRoutes.get("/flutter/verify", flutterwaveFunctions.verifyFlutterwavePayment);
 
-
+// resv_395f9926-cb19-410b-9678-4d2d717523a1_1750279889696
 // paymentRoutes.post("/request-refund/:reservationId", requireAuth, requestRefund);
 // paymentRoutes.post("/refund/:refundRequestId", requireAdmin, approveRefund);
 export { roomRoutes, reservationRoutes , paymentRoutes};

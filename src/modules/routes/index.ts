@@ -3,8 +3,7 @@ const router = express.Router();
 
 import { authUserRoute } from './auth.route';
 import {reservationRoutes, roomRoutes, paymentRoutes} from './room.route'
-
-import path from 'path';
+import { adminRouter } from './admin.route';
 
 const defaultRoutes = [
 {
@@ -22,6 +21,10 @@ const defaultRoutes = [
 {
   path:'/payment',
   route: paymentRoutes
+},
+{
+  path:'/admin',
+  route: adminRouter
 }
 ];
 
