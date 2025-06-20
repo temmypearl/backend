@@ -4,7 +4,7 @@ import { config } from './../../config'; // configuration (e.g., secret keys)
 import https from 'https'; // Node.js HTTPS module to make API calls
 import { Asyncly } from '../../extension'; // custom wrapper for async functions
 import axios from 'axios'; // HTTP client for simpler API requests
-import { db } from '../../drizzle/db'; // your Drizzle ORM database instance
+import { db } from '../../drizzle/connection'; // your Drizzle ORM database instance
 import { Reservation } from './../reservation/reservation.model'; // Reservation schema/model
 import { roomModel } from './../room/room.model'; // Room schema/model (unused in this file)
 import { eq } from "drizzle-orm"; // helper function to build SQL queries

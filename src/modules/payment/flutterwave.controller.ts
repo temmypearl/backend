@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { config } from './../../config'; // configuration (e.g., secret keys)
 import { Asyncly } from '../../extension'; // custom wrapper for async functions
 import axios from 'axios'; // HTTP client for simpler API requests
-import { db } from '../../drizzle/db'; // your Drizzle ORM database instance
+import { db } from '../../drizzle/connection'; // your Drizzle ORM database instance
 import { Reservation } from './../reservation/reservation.model'; // Reservation schema/model
 import { ApiError } from './../../middlewares';
 import { eq } from "drizzle-orm"; // helper function to build SQL queries

@@ -17,6 +17,6 @@
     },
     "typeRoots": ["./node_modules/@types", "./src/types"]
   },
-  "include": ["src", "config","src/types", "src/types.d.ts"],
+  "include": ["src", "config","src/types", "src/types.d.ts", "src/drizzle.config.ts"],
   "exclude": ["node_modules", "dist", "**/*spec.ts"]
 }

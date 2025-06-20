@@ -3,7 +3,7 @@ import { eq, sql } from 'drizzle-orm';
 import { roomModel } from "./room.model";
 import { createRoomSchema } from "./room.validation"; // Assuming you have a Zod schema here
 import { Asyncly } from "./../../extension";
-import { db } from "./../../drizzle/db";
+import { db } from "../../drizzle/connection";
 import { ApiError } from "../../middlewares"; // For error handling
 
 // GET /hotel/getRooms

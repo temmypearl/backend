@@ -9,7 +9,7 @@
 import { Request, Response } from "express";
 import { Asyncly } from "../../extension";
 import { eq, or } from "drizzle-orm";
-import { db } from "../../drizzle/db";
+import { db } from "../../drizzle/connection";
 import { Reservation } from "../reservation/reservation.model";
 import { refundTable } from "../payment/payment.model";
 import { roomModel } from "../room/room.model";

@@ -1,6 +1,6 @@
 import http from 'http';
 import app from '../server';
-import { connectDB, pool } from '../drizzle/db';
+import { connectDB, pool } from '../drizzle/connection';
 import { logger, config } from '../config';
 import { Server } from 'socket.io';
 

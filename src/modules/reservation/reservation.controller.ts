@@ -4,7 +4,7 @@ import { registerValidation } from "./reservation.validation";
 import { ApiError } from "../../middlewares";
 import { ITokenPayload } from "../users/user.interface";
 import { Reservation } from "./reservation.model";
-import { db } from "./../../drizzle/db";
+import { db } from "../../drizzle/connection";
 import { roomModel } from "./../room/room.model";
 import { eq, and } from "drizzle-orm";
 

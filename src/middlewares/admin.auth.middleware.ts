@@ -6,7 +6,7 @@ import httpStatus from "http-status";
 import { TokenExpiredError } from "jsonwebtoken";
 import { ApiError } from "./apiError";
 import {Admin}  from "../modules/admin/admin.model";
-import { db } from "../drizzle/db";
+import { db } from "../drizzle/connection";
 import { eq } from "drizzle-orm";
 
 export interface AuthenticatedRequest extends Request {

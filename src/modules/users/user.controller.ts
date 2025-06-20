@@ -3,7 +3,7 @@ import { User } from "./user.model"
 import { Asyncly } from "../../extension"
 import { eq, and, gt, or } from 'drizzle-orm';
 import { ApiError } from "../../middlewares"
-import {db} from "../../drizzle/db"
+import {db} from "../../drizzle/connection"
 import { errorHandler } from "../../middlewares"
 import { NextFunction, Request, Response } from "express"
 import {AuthTokens} from "../../utils/hash"

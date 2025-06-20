@@ -1,5 +1,5 @@
 // src/scripts/seedRooms.ts
-import { db } from "../../drizzle/db"; // assumes your Neon + Drizzle setup is here
+import { db } from "../../drizzle/connection"; // assumes your Neon + Drizzle setup is here
 import { roomModel } from "./room.model";
 import { eq } from "drizzle-orm";
 
