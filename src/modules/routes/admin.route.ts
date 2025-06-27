@@ -7,29 +7,13 @@ import { authValidation } from "../users/user.validation";
 const adminRouter = express.Router();
 
 // ============ AUTH ROUTES ==============
-adminRouter.post(
-  "/signup",
-  validateData(authValidation.registerSchema, ["body"]),
-  adminController.adminSignin
-);
+adminRouter.post("/signup",validateData(authValidation.registerSchema),adminController.adminSignin);
 
-adminRouter.post(
-  "/login",
-  validateData(authValidation.LoginSchema, ["body"]),
-  adminController.adminLogin
-);
+adminRouter.post("/login",validateData(authValidation.LoginSchema, ["body"]),adminController.adminLogin);
 
-adminRouter.post(
-  "/verify-account",
-  validateData(authValidation.verifySchema, ["body"]),
-  adminController.verifyAdminAccount
-);
+adminRouter.post("/verify-account",validateData(authValidation.verifySchema, ["body"]),adminController.verifyAdminAccount);
 
-adminRouter.post(
-  "/resend-otp",
-  validateData(authValidation.resendVerficationCode, ["body"]),
-  adminController.resendAdminOTP
-);
+adminRouter.post("/resend-otp",validateData(authValidation.resendVerficationCode, ["body"]),adminController.resendAdminOTP);
 
 // ============ PROTECTED ADMIN ROUTES (require admin token + role check) ==============
 adminRouter.use(requireAdmin); //Protect all routes below

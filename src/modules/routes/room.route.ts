@@ -8,6 +8,7 @@ import { registerValidation } from "../reservation/reservation.validation";
 import { reservatons } from "../reservation/reservation.controller";
 import { paystackController } from "../payment/paystack.controller";
 import { requireAuth } from "../../middlewares/auth.middleware";
+import { requireAdmin } from "../../middlewares/admin.auth.middleware";
 import { createRoomSchema, editRoomSchema, deleteRoomSchema } from "../room/room.validation";
 import { flutterwaveFunctions } from "../payment/flutterwave.controller";
 
@@ -18,9 +19,12 @@ const roomRoutes = express.Router();
 const paymentRoutes = express.Router();
 
 // All routes require authentication
-roomRoutes.get("/getRooms", requireAuth, roomController.getRooms);
+roomRoutes.get("/getRooms", requireAuth, requireAdmin, roomController.getRooms);
+
 roomRoutes.post("/create", requireAuth, validateData(createRoomSchema), roomController.createRoom);
+
 roomRoutes.patch("/:roomNo/editRoom", requireAuth, validateData(editRoomSchema), roomController.editRoom);
+
 roomRoutes.delete("/:roomNo/deleteRoom", requireAuth, validateData(deleteRoomSchema), roomController.deleteRoom);
 
 // roomRoutes.post("/reserveRoom", requireAuth, validateData(registerValidation.registerSchema), reservatons.Register);
@@ -51,13 +55,6 @@ paymentRoutes.get("/flutter/verify", flutterwaveFunctions.verifyFlutterwavePayme
 export { roomRoutes, reservationRoutes , paymentRoutes};
 
 
-// 4ff777dd-1c95-42af-83ef-af1bdcb3eaa9
-
-// GET     /reservations/history
-// GET     /reservations/:id
-// PATCH   /reservations/:id/cancel
-// PATCH   /reservations/:id/modify
-// POST    /reservations/multiple-booking
 // GET     /users/profile
 // PATCH   /users/profile/update
 // POST    /users/reviews

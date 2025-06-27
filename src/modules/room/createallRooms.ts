@@ -1,5 +1,5 @@
 // src/scripts/seedRooms.ts
-import { db } from "../../drizzle/connection"; // assumes your Neon + Drizzle setup is here
+import  {db}  from "../../drizzle/connection"; 
 import { roomModel } from "./room.model";
 import { eq } from "drizzle-orm";
 
@@ -16,21 +16,21 @@ type RoomType = typeof roomTypes[number];
 
 
 const roomPriceMap: Record<RoomType, number> = {
-    "Double Deluxe": 145000,
-    "Royal Standard": 150000,
-    "Royal Executive": 165000,
-    "Executive Suite": 185000,
-    "Luxury King": 200000,
-    "Premium Suite": 200000
+    "Double Deluxe": 1000,
+    "Royal Standard": 1200,
+    "Royal Executive": 1400,
+    "Executive Suite": 1500,
+    "Luxury King": 1700,
+    "Premium Suite": 2000
 };
 
 const sampleAmenities = [
-    "Wi-Fi, TV, AC",
-    "Wi-Fi, TV, AC, Mini Bar",
-    "Wi-Fi, TV, AC, Sea View",
-    "Wi-Fi, TV, AC, Pool Access",
-    "Wi-Fi, TV, AC, Gym Access",
-    "Wi-Fi, TV, AC, Breakfast Included"
+    "Wi-Fi, TV, AC, Single Bed",
+    "Wi-Fi, TV, AC, Mini Bar, Single Bed",
+    "Twin bed, Wi-Fi, TV, AC, Sea View",
+    "Wi-Fi, Queen Sized Bed, TV, AC, Pool Access",
+    "Wi-Fi, TV, AC, King Sized Bed, Gym Access",
+    "Wi-Fi, TV, AC King Sized Bed, Breakfast Included"
 ];
 
 const roomImageBaseUrl = "https://example.com/images/rooms/";
