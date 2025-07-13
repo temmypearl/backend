@@ -172,7 +172,12 @@ const requestRefund = Asyncly(async (req: Request, res: Response) => {
     // Save the refund request
     const [createdRequest] = await db
         .insert(refundTable)
-        .values({ reservationId, reason, status: "pending" })
+        .values({
+            id: undefined, // or use a UUID generator if required, e.g. id: uuidv4(),
+            reservationId: reservation.id,
+            reason,
+            status: "pending"
+        })
         .returning();
 
     res.status(201).json({
@@ -237,7 +242,7 @@ const approveRefund = Asyncly(async (req: Request, res: Response) => {
     const [refund] = await db
         .select()
         .from(refundTable)
-        .where(eq(refundTable.id, parseInt(refundRequestId)));
+        .where(eq(refundTable.id, refundRequestId));
 
     if (!refund) {
         return res.status(404).json({ error: "Refund request not found" });
@@ -273,7 +278,7 @@ const approveRefund = Asyncly(async (req: Request, res: Response) => {
     await db
         .update(refundTable)
         .set({ status: "refunded" })
-        .where(eq(refundTable.id, parseInt(refundRequestId)));
+        .where(eq(refundTable.id, refundRequestId));
 
     // Also update reservation if needed
     await db
