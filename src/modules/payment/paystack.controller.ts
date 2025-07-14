@@ -42,7 +42,7 @@ const initializePay = Asyncly(async (req: Request, res: Response) => {
     const postData = JSON.stringify({
         email: reservation.emailAddress,
         amount: reservation.totalPrice * 100, // in Kobo
-        callback_url: 'http://localhost:4000/api/v1/hotel/payment/verify/',
+        callback_url: 'http://localhost:5173/confirmPayment',
         metadata: {
             reservationId: reservation.id,
             name: reservation.name,

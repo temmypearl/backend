@@ -16,7 +16,7 @@ adminRouter.post("/verify-account",validateData(authValidation.verifySchema, ["b
 adminRouter.post("/resend-otp",validateData(authValidation.resendVerficationCode, ["body"]),adminController.resendAdminOTP);
 
 // ============ PROTECTED ADMIN ROUTES (require admin token + role check) ==============
-adminRouter.use(requireAdmin); //Protect all routes below
+// adminRouter.use(requireAdmin); //Protect all routes below
 
 adminRouter.get("/reservations", adminController.getAllReservations);
 adminRouter.get("/reservations/paid", adminController.getAllPaidReservations);

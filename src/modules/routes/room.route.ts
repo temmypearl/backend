@@ -41,7 +41,7 @@ reservationRoutes.post("/multiple-booking", requireAuth, reservatons.multipleBoo
 
 
 paymentRoutes.post("/initiate-payment", requireAuth, paystackController.initializePay);
-paymentRoutes.get("/verify", requireAuth, paystackController.verifyPayment);
+paymentRoutes.get("/verify", paystackController.verifyPayment);
 paymentRoutes.post("/request-refund/:reservationId", requireAuth, paystackController.requestRefund);
 // paymentRoutes.post("/refund/:refundRequestId", requireAdmin, paystackController.approveRefund);
 paymentRoutes.get("/invoice/:reservationId", requireAuth, paystackController.getInvoice);
